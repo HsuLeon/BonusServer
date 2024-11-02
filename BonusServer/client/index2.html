@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <button id="sendButton">Send Message</button>
+    <div id="messages"></div>
+
+    <script>
+        var ws;
+        fetch("http://localhost:8000/test/settings", { method: 'GET' })
+            .then(function (response) {
+                return response.text();
+            })
+            .then(function (url) {
+
+                ws = new WebSocket(url);
+
+                ws.onopen = function () {
+                    document.getElementById("messages").innerHTML += "<p>Connected to server</p>";
+                };
+
+                ws.onmessage = function (event) {
+                    document.getElementById("messages").innerHTML += "<p>Received: " + event.data + "</p>";
+                };
+
+                ws.onclose = function () {
+                    document.getElementById("messages").innerHTML += "<p>Disconnected from server</p>";
+                };
+
+                ws.onerror = function (error) {
+                    document.getElementById("messages").innerHTML += "<p>Error: " + error.message + "</p>";
+                };
+            });
+
+        document.getElementById("sendButton").onclick = function () {
+            var message = "Hello from client!";
+            ws.send(message);
+            document.getElementById("messages").innerHTML += "<p>Sent: " + message + "</p>";
+        };
+    </script>
+</body>
+</html>

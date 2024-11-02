@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 自訂滾動條整體樣式 */
+::-webkit-scrollbar {
+  width: 0px; /* 滾動條的寬度 */
+  height: 0px; /* 滾動條的高度 */
+}
+
+/* 自訂滾動條軌道樣式 */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 軌道的背景顏色 */
+  border-radius: 10px; /* 軌道的圓角 */
+}
+
+/* 自訂滾動條拇指樣式 */
+::-webkit-scrollbar-thumb {
+  background: #888; /* 滾動條拇指的顏色 */
+  border-radius: 10px; /* 拇指的圓角 */
+}
+
+/* 當滑鼠懸停在滾動條上時的樣式 */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 滾動條拇指在懸停時的顏色 */
+}
+.golden-gradient-text {
+  font-size: 72px; /* 調整字體大小以匹配圖片 */
+  font-weight: bolder; /* 設置為粗體 */
+  background: linear-gradient(
+    to bottom,
+    #ffd700 0%,
+    #ffcc00 40%,
+    #ff8c00 50%,
+    #ffaa00 75%,
+    #ffcc00 85%,
+    #ffd700 100%
+  ); /* 調整後的金色漸層，中間偏橘色 */
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-family: "Arial", sans-serif; /* 保持 Arial 字體 */
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px; /* 增加字母間距 */
+  -webkit-text-stroke: 0.5px #ffb300; /* 添加細微的描邊效果 */
+}

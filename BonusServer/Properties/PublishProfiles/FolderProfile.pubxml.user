@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>D:\Projects\Frank\BonusServer\BonusServer\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2024-08-03T05:42:07.6612814Z;True|2024-08-03T13:42:03.8344025+08:00;True|2024-08-03T10:59:37.7963886+08:00;True|2024-08-03T10:59:31.8820606+08:00;False|2024-08-03T10:59:28.0519880+08:00;True|2024-07-27T16:35:20.5548626+08:00;False|2024-07-27T16:35:05.0679361+08:00;False|2024-07-27T16:35:01.4758329+08:00;True|2024-07-27T15:50:23.3348672+08:00;True|2024-07-27T15:50:19.0995708+08:00;False|2024-07-27T15:50:05.3818424+08:00;True|2024-07-27T15:22:18.1347600+08:00;True|2024-07-27T15:22:01.6722043+08:00;True|2024-07-20T11:11:58.4306778+08:00;True|2024-07-06T15:17:21.8695459+08:00;True|2024-07-06T15:15:28.5563961+08:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

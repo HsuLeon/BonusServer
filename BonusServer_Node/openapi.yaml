@@ -1,0 +1,448 @@
+# openapi.yaml
+
+openapi: 3.0.0
+info:
+  title: 您的 API 標題
+  version: "1.0.0"
+  description: API 說明
+servers:
+  - url: http://127.0.0.1:8000
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+  - name: Test
+    description: 測試相關的操作
+  - name: Bonus
+    description: 獎勵相關的操作
+  - name: Config
+    description: 配置相關的操作
+  - name: System
+    description: 系統相關的操作
+paths:
+  /test/login:
+    post:
+      summary: User login
+      description: Logs in a user and returns their IP address
+      tags: [Test]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                machineName:
+                  type: string
+                  description: The name of the machine
+                scoreScale:
+                  type: number
+                  description: The score scale
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: login token
+                  webSite:
+                    type: string
+                    description: name of bonus server
+                  ruleId:
+                    type: number
+                    description: using which rule
+        500:
+          description: Server error
+  /test/spin:
+    post:
+      summary: Spin the machine
+      description: Spins the machine and returns the result
+      tags: [Test]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                TotalBet:
+                  type: number
+                  description: The total bet amount
+                TotalWin:
+                  type: number
+                  description: The total win amount
+                WinA:
+                  type: number
+                  description: The win amount for category A
+                WinB:
+                  type: number
+                  description: The win amount for category B
+      responses:
+        200:
+          description: Successful spin
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /test/settings:
+    get:
+      summary: Get settings
+      description: Retrieves the settings for the machine
+      tags: [Test]
+      responses:
+        200:
+          description: Successful retrieval
+        500:
+          description: Server error
+  /bonus/login:
+    post:
+      summary: User login
+      description: Logs in a user and returns login data
+      tags: [Bonus]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                MachineName:
+                  type: string
+                  description: The name of the machine
+                ScoreScale:
+                  type: number
+                  description: The score scale
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: token bearer
+                  webSite:
+                    type: string
+                    description: name of current server
+                  ruleId:
+                    type: which rule used for bonus server
+                    description: The score scale
+        500:
+          description: Server error
+  /bonus/spin:
+    post:
+      summary: Spin the machine
+      description: Spins the machine and returns the result
+      tags: [Bonus]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                UserAccount:
+                  type: string
+                  description: user account
+                BonusType:
+                  type: number
+                  description: trigger rule id
+                SpinData:
+                  type: string
+                  description: string content of spin data {TotalBet,TotalWin,WinA,WinB}
+                SyncTime:
+                  type: string
+                  description: time of spin launched, format yy-mm-dd hh:MM:ss
+                AbleToRushBonus:
+                  type: boolean
+                  description: able to do rushing bonus
+      responses:
+        200:
+          description: Successful spin
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /bonus/lower/joinWin:
+    post:
+      summary: Join win
+      description: Joins a win and returns a token string
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful join
+          content:
+            text/plain:
+              schema:
+                type: string
+        500:
+          description: Server error
+  /bonus/lower/collect:
+    post:
+      summary: Collect bonus
+      description: Collects the bonus
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful collection
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /bonus/lower/rushToWinA:
+    post:
+      summary: Rush to win A
+      description: Rushes to win A and returns status
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful rush
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /bonus/lower/rushToWinCR:
+    post:
+      summary: Rush to win CR
+      description: Rushes to win CR and returns status
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful rush
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /bonus/lower/replyToWinA:
+    post:
+      summary: Reply to win A
+      description: Replies to win A (only called by upper bonus server)
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful reply
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /bonus/lower/replyToWinCR:
+    post:
+      summary: Reply to win CR
+      description: Replies to win CR (only called by upper bonus server)
+      tags: [Bonus]
+      responses:
+        200:
+          description: Successful reply
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+  /configSetting/settings:
+    get:
+      summary: Get configuration settings
+      description: Retrieves the current configuration settings
+      tags: [Config]
+      responses:
+        200:
+          description: Successful retrieval of settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigData"
+        500:
+          description: Server error
+    put:
+      summary: Update configuration settings
+      description: Updates the configuration settings
+      tags: [Config]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfigData"
+      responses:
+        200:
+          description: Successful update
+        500:
+          description: Server error
+
+  /system/launchTime:
+    get:
+      summary: Get system launch time
+      description: Retrieves the system launch time
+      tags: [System]
+      responses:
+        200:
+          description: Successful retrieval of launch time
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  launchTime:
+                    type: string
+                    description: time of server started
+        500:
+          description: Server error
+
+  /system/notify:
+    get:
+      summary: Get system notifications
+      description: Retrieves the system notifications
+      tags: [System]
+      responses:
+        200:
+          description: Successful retrieval of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: string
+                    description: histories of win logs
+                  BonusType:
+                    type: number
+                    description: total bet for WinA
+                  SpinData:
+                    type: number
+                    description: total bet for WinB
+                  SyncTime:
+                    type: number
+                    description: total bet for WinCR
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+    post:
+      summary: Send system notification
+      description: Sends a system notification
+      tags: [System]
+      responses:
+        200:
+          description: Notification sent successfully
+        500:
+          description: Server error
+      security:
+        - BearerAuth: []   # Specify the Bearer token security scheme here
+
+components:
+  schemas:
+    LoginData:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 令牌
+        webSite:
+          type: string
+          description: 網站
+        ruleId:
+          type: string
+          description: 規則ID
+
+    SpinData:
+      type: object
+      properties:
+        TotalBet:
+          type: number
+          description: 總投注金額
+        TotalWin:
+          type: number
+          description: 總贏金額
+        WinA:
+          type: number
+          description: 贏金額A
+        WinB:
+          type: number
+          description: 贏金額B
+
+    ConfigData:
+      type: object
+      properties:
+        BonusServerDomain:
+          type: string
+          description: 獎勵伺服器域名
+        BonusServerPort:
+          type: number
+          description: 獎勵伺服器端口
+        BonusServerPassword:
+          type: string
+          description: 獎勵伺服器密碼
+        UrlUpperDomain:
+          type: string
+          description: 上層域名
+        SubDomains:
+          type: string
+          description: 子域名
+        APITransferPoints:
+          type: number
+          description: API轉換點數
+        CollectSubScale:
+          type: number
+          description: 收集子域比例
+        RabbitMQServer:
+          type: string
+          description: RabbitMQ伺服器
+        RabbitMQUserName:
+          type: string
+          description: RabbitMQ使用者名稱
+        RabbitMQPassword:
+          type: string
+          description: RabbitMQ密碼
+        ConditionWinA:
+          type: number
+          description: 條件贏金額A
+        ConditionWinB:
+          type: number
+          description: 條件贏金額B
+        ConditionWinCR:
+          type: number
+          description: 條件贏金額CR
+
+    LaunchTime:
+      type: object
+      properties:
+        launchTime:
+          type: string
+          description: 啟動時間
+
+    NotifyData:
+      type: object
+      properties:
+        records:
+          type: string
+          description: 通知記錄
+        totalBet_A:
+          type: number
+          description: 總投注金額A
+        totalBet_B:
+          type: number
+          description: 總投注金額B
+        totalBet_CR:
+          type: number
+          description: 總投注金額CR
