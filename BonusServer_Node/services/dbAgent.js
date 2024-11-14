@@ -11,7 +11,7 @@ export default class DBAgent
         DBAgent.#mWinLobbyDB.init(dbHost, dbPort);
     }
 
-    static addBonusRecord(winType, totalBet, scoreInterval, objBonus, urlTransferPoints, strTransferResponse)
+    static addBonusRecord(winType, totalBet, scoreInterval, objBonus, urlTransferPoints, urlResponse)
     {
         return DBAgent.#mWinLobbyDB.addBonusRecord(
             winType,
@@ -19,7 +19,7 @@ export default class DBAgent
             scoreInterval,
             JSON.stringify(objBonus),
             urlTransferPoints,
-            strTransferResponse
+            urlResponse
         );
     }
 }

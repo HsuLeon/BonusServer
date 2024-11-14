@@ -2,6 +2,8 @@
 import mongoose from "mongoose";
 import Utils from "../utils.js";
 
+let WinAwardModel = null;
+
 export default class CMongoDB
 {
     init(server, port) {
@@ -20,7 +22,7 @@ export default class CMongoDB
             });
             //Define a schema
             const winAwardSchema = new mongoose.Schema({
-                WinType: Number,
+                WinType: String,
                 TotalBet: Number,
                 ScoreInterval: Number,
                 Bonus: String,
@@ -28,14 +30,14 @@ export default class CMongoDB
                 Response: String,
             });
             // Compile model from schema
-            this.WinAwardModel = mongoose.model("WinAwards", winAwardSchema);
+            WinAwardModel = mongoose.model("WinAwards", winAwardSchema);
         }
         catch (err) {
             console.log(err.message);
         }
     };
 
-    addBonusRecord(winType, totalBet, scoreInterval, bonus, urlTransferPoints, strTransferResponse) {
+    addBonusRecord(winType, totalBet, scoreInterval, bonus, urlTransferPoints, urlResponse) {
         /*
         winType: number
         totalBet: number
@@ -44,7 +46,7 @@ export default class CMongoDB
         urlTransferPoints: string
         response: string
         */
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
                 // Create an instance of model WinAwardModel
                 const model = new WinAwardModel();
@@ -53,11 +55,9 @@ export default class CMongoDB
                 model.ScoreInterval = scoreInterval;
                 model.Bonus = bonus;
                 model.UrlTransferPoints = urlTransferPoints;
-                model.Response = strTransferResponse;
-                model.save(function (err) {
-                    if (err) reject(err);
-                    resolve();
-                });
+                model.Response = urlResponse.data ? JSON.stringify(urlResponse.data) : urlResponse.toString();
+                await model.save();
+                resolve();
             }
             catch (err) {
                 reject(err.message ? err.message : err);

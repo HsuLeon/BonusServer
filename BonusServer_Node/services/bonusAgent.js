@@ -582,7 +582,7 @@ export default class BonusAgent
             {
                 const bonusRecords = JSON.stringify(obj["bonusRecords"]);
                 BonusAgent.#mBonusRecords = JSON.parse(bonusRecords);
-                console.log(BonusAgent.#mBonusRecords);
+                console.log(JSON.stringify(BonusAgent.#mBonusRecords));
             }
 
             if (obj.hasOwnProperty("collectedA"))

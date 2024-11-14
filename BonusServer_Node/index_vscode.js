@@ -11,12 +11,13 @@ import configSettingRouter from "./router/configSetting.js";
 import setupMiddleware from "./router/middleware/app.js";
 import systemRouter from "./router/system.js";
 import testRouter from "./router/test.js";
+import licenseRouter from "./router/license.js";
 // import RabbitMQManager from "./utils/rabbitMqClass.js";
-import BonusAgent from './services/bonusAgent.js';
+import ConfigSetting from "./configSetting.js";
+import BonusAgent from "./services/bonusAgent.js";
+import DBAgent from "./services/dbAgent.js";
+import Log from "./utils/log.js";
 import Utils from "./utils/utils.js";
-import ConfigSetting from './configSetting.js';
-import DBAgent from './services/dbAgent.js';
-import Log from './utils/log.js';
 
 // 取得 __dirname 的替代方案
 const __filename = fileURLToPath(import.meta.url);
@@ -26,131 +27,173 @@ const defaultPort = 8000;
 
 // 解析命令行參數
 const parseArgs = () => {
-    const args = process.argv.slice(2);
-    args.forEach((arg) => {
-        const [key, value] = arg.split("=");
-        if (key && value) {
-            switch (key.toLowerCase()) {
-            case "env":
-                process.env.Deploy = value;
-                break;
-            case "port":
-                process.env.PORT = parseInt(value, 10);
-                break;
-            default:
-                break;
-            }
-        }
-    });
-
-    // 使用預設值如果未指定
-    const Deploy = process.env.Deploy || "localhost";
-    const PORT = process.env.PORT || defaultPort;
-    if (!process.env.Deploy || !process.env.PORT) {
-        console.log("args not assigned completely, using default settings...");
-        process.env.Deploy = Deploy;
-        process.env.PORT = PORT;
+  const args = process.argv.slice(2);
+  args.forEach((arg) => {
+    const [key, value] = arg.split("=");
+    if (key && value) {
+      switch (key.toLowerCase()) {
+        case "env":
+          process.env.Deploy = value;
+          break;
+        case "port":
+          process.env.PORT = parseInt(value, 10);
+          break;
+        default:
+          break;
+      }
     }
+  });
+
+  // 使用預設值如果未指定
+  const Deploy = process.env.Deploy || "localhost";
+  const PORT = process.env.PORT || defaultPort;
+  if (!process.env.Deploy || !process.env.PORT) {
+    console.log("args not assigned completely, using default settings...");
+    process.env.Deploy = Deploy;
+    process.env.PORT = PORT;
+  }
 };
 
 // 設定 Express 應用
 const setupExpressApp = () => {
-    const app = express();
+  const app = express();
 
-    // 使用 setupMiddleware 函數來設置中間件
-    setupMiddleware(app);
+  // 使用 setupMiddleware 函數來設置中間件
+  setupMiddleware(app);
 
-    // 加載 OpenAPI 規範文件
-    const swaggerDocument = YAML.load("./openapi.yaml");
+  // 加載 OpenAPI 規範文件
+  const swaggerDocument = YAML.load("./openapi.yaml");
 
-    // 設置 Swagger UI 路由
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  // 設置 Swagger UI 路由
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-    // 路由設定
-    app.use("/bonus", bonusRouter);
-    app.use("/configSetting", configSettingRouter);
-    app.use("/system", systemRouter);
-    app.use("/test", testRouter);
+  // 路由設定
+  app.use("/bonus", bonusRouter);
+  app.use("/configSetting", configSettingRouter);
+  app.use("/system", systemRouter);
+  app.use("/test", testRouter);
+  app.use("/license", licenseRouter);
 
-    app.use(express.static(path.join(__dirname, "dist")));
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "dist", "index.html"));
+  app.use(express.static(path.join(__dirname, "dist")));
+
+  // 添加一個通用的錯誤處理中間件
+  app.use((err, req, res, next) => {
+    const errorLog = {
+      error: err.message,
+      url: req.url,
+      method: req.method,
+      path: req.path,
+    };
+
+    // 根據請求方法添加適當的請求資料
+    if (req.query && Object.keys(req.query).length > 0) {
+      errorLog.query = req.query;
+    }
+
+    console.error("General Error:", errorLog);
+
+    if (err instanceof URIError) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid URL encoding in request",
+        code: "URI_DECODE_ERROR",
+      });
+    }
+
+    // 處理其他類型的錯誤
+    return res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      code: "INTERNAL_SERVER_ERROR",
     });
-    return app;
+  });
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
+  });
+
+  return app;
 };
 
 // 自動開啟 Swagger 文件
 const openSwaggerInBrowser = (port) => {
-    const swaggerUrl = `http://localhost:${port}/api-docs`;
-    switch (process.platform) {
-        case "darwin": // macOS
-            exec(`open ${swaggerUrl}`);
-            break;
-        case "win32": // Windows
-            exec(`start ${swaggerUrl}`);
-            break;
-        default: // Linux
-            exec(`xdg-open ${swaggerUrl}`);
-            break;
-    }
+  const swaggerUrl = `http://localhost:${port}/api-docs`;
+  switch (process.platform) {
+    case "darwin": // macOS
+      exec(`open ${swaggerUrl}`);
+      break;
+    case "win32": // Windows
+      exec(`start ${swaggerUrl}`);
+      break;
+    default: // Linux
+      exec(`xdg-open ${swaggerUrl}`);
+      break;
+  }
 };
 
 // 啟動伺服器
 const startServer = async () => {
-    try {
-        parseArgs();
-        Utils.setWorkDir(__dirname);
+  try {
+    parseArgs();
+    Utils.setWorkDir(__dirname);
 
-        const confPath = "C:/SignalR/BonusServer";
-        const confFile = confPath + "/config.bin";
-        const recordsFile = confPath + "/BonusRecords.json";
-        Log.Path = `${confPath}/Log`;
-        await ConfigSetting.loadConfig(path.resolve(confFile));
+    const confPath = "C:/SignalR/BonusServer";
+    const confFile = confPath + "/config.bin";
+    const recordsFile = confPath + "/BonusRecords.json";
+    Log.Path = `${confPath}/Log`;
+    await ConfigSetting.loadConfig(path.resolve(confFile));
 
-        DBAgent.initDB(ConfigSetting.DBHost(), ConfigSetting.DBPort());
+    DBAgent.initDB(ConfigSetting.DBHost(), ConfigSetting.DBPort());
 
-        BonusAgent.initParams(
-            ConfigSetting.WebSite(),
-            ConfigSetting.BonusServerDomain(),
-            ConfigSetting.BonusServerPort(),
-            ConfigSetting.UpperDomain(),
-            ConfigSetting.APITransferPoints(),
-            ConfigSetting.CollectSubScale()
-        );
-        BonusAgent.initQueues(ConfigSetting.RabbitMQServer(), ConfigSetting.RabbitMQUserName(), ConfigSetting.RabbitMQPassword());
-        BonusAgent.initTriggers(ConfigSetting.BetWinRule(), ConfigSetting.ConditionWinA(), ConfigSetting.ConditionWinB(), ConfigSetting.ConditionWinCR());
-        BonusAgent.restoreRecords(recordsFile);
+    BonusAgent.initParams(
+      ConfigSetting.WebSite(),
+      ConfigSetting.BonusServerDomain(),
+      ConfigSetting.BonusServerPort(),
+      ConfigSetting.UpperDomain(),
+      ConfigSetting.APITransferPoints(),
+      ConfigSetting.CollectSubScale()
+    );
+    BonusAgent.initQueues(
+      ConfigSetting.RabbitMQServer(),
+      ConfigSetting.RabbitMQUserName(),
+      ConfigSetting.RabbitMQPassword()
+    );
+    BonusAgent.initTriggers(
+      ConfigSetting.BetWinRule(),
+      ConfigSetting.ConditionWinA(),
+      ConfigSetting.ConditionWinB(),
+      ConfigSetting.ConditionWinCR()
+    );
+    BonusAgent.restoreRecords(recordsFile);
 
-        const app = setupExpressApp();
-        if (ConfigSetting.SSL_PATH) {
-            const sslPath = path.resolve(__dirname, ConfigSetting.SSL_PATH);
-            const [key, cert, ca] = await Promise.all([
-                fs.readFile(path.join(sslPath, "private.key")),
-                fs.readFile(path.join(sslPath, "cert.crt")),
-                fs.readFile(path.join(sslPath, "ca.crt")),
-            ]);
+    const app = setupExpressApp();
+    if (ConfigSetting.SSL_PATH) {
+      const sslPath = path.resolve(__dirname, ConfigSetting.SSL_PATH);
+      const [key, cert, ca] = await Promise.all([
+        fs.readFile(path.join(sslPath, "private.key")),
+        fs.readFile(path.join(sslPath, "cert.crt")),
+        fs.readFile(path.join(sslPath, "ca.crt")),
+      ]);
 
-            const options = { key, cert, ca };
-            const httpsServer = https.createServer(options, app);
-            httpsServer.listen(443, () => {
-                //app.use(express.static(path.join(__dirname, "../dist")));
-                console.log("HTTPS Server listening on port 443");
-            });
-        }
-        else {
-            //app.use(express.static(path.join(__dirname, "../dist")));
-            const PORT = parseInt(process.env.PORT, 10) || defaultPort;
-            app.listen(PORT, () => {
-                console.log(`HTTP Server listening on port ${PORT}`);
-            });
-        }
-
-        // 自動開啟 Swagger 文件
-        openSwaggerInBrowser(process.env.PORT || defaultPort);
+      const options = { key, cert, ca };
+      const httpsServer = https.createServer(options, app);
+      httpsServer.listen(443, () => {
+        //app.use(express.static(path.join(__dirname, "../dist")));
+        console.log("HTTPS Server listening on port 443");
+      });
+    } else {
+      //app.use(express.static(path.join(__dirname, "../dist")));
+      const PORT = parseInt(process.env.PORT, 10) || defaultPort;
+      app.listen(PORT, () => {
+        console.log(`HTTP Server listening on port ${PORT}`);
+      });
     }
-    catch (error) {
-        console.error("Server initialization error:", error.message);
-    }
+
+    // 自動開啟 Swagger 文件
+    openSwaggerInBrowser(process.env.PORT || defaultPort);
+  } catch (error) {
+    console.error("Server initialization error:", error.message);
+  }
 };
 
 // 執行啟動伺服器

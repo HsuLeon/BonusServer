@@ -319,12 +319,12 @@ export class BonusRule
                 award: false,
                 reason: Config.UniBonus
             };
-            let strResponse = await axios.post(url, objBonus);
-            if (!strResponse) strResponse = `${urlTransferPoints} returns null`;
+            const response = await axios.post(url, objBonus);
+            if (!response) throw new Error(`API ${url} returns null`);
             // make record here...
             DBAgent.addBonusRecord(BonusRule.WIN_TYPE.WinA,
                 this._WinCollection_A.TotalBet, this._Condition_A.ScoreInterval,
-                objBonus, urlTransferPoints, strResponse);
+                objBonus, urlTransferPoints, response);
             // cal left totalBet
             let leftTotalBet = this._WinCollection_A.TotalBet;
             while (leftTotalBet > this._Condition_A.ScoreInterval) leftTotalBet -= this._Condition_A.ScoreInterval;
@@ -372,12 +372,12 @@ export class BonusRule
                 award: false,
                 reason: Config.UniBonus
             };
-            let strResponse = await axios.post(url, objBonus);
-            if (!strResponse) strResponse = `${urlTransferPoints} returns null`;
+            const response = await axios.post(url, objBonus);
+            if (!response) throw new Error(`API ${url} returns null`);
             // make record here...
             DBAgent.addBonusRecord(BonusRule.WIN_TYPE.WinB,
                 this._WinCollection_B.TotalBet, this._Condition_B.ScoreInterval,
-                objBonus, urlTransferPoints, strResponse);
+                objBonus, urlTransferPoints, response);
             // cal left totalBet
             let leftTotalBet = this._WinCollection_B.TotalBet;
             while (leftTotalBet > this._Condition_B.ScoreInterval) leftTotalBet -= this._Condition_B.ScoreInterval;
@@ -425,12 +425,12 @@ export class BonusRule
                 award: false,
                 reason: Config.UniBonus
             };
-            let strResponse = await axios.post(url, objBonus);
-            if (!strResponse) strResponse = `${urlTransferPoints} returns null`;
+            const response = await axios.post(url, objBonus);
+            if (!response) throw new Error(`API ${url} returns null`);
             // make record here...
             DBAgent.addBonusRecord(BonusRule.WIN_TYPE.WinCR,
                 this._WinCollection_CR.TotalBet, this._Condition_CR.ScoreInterval,
-                objBonus, urlTransferPoints, strResponse);
+                objBonus, urlTransferPoints, response);
             // cal left totalBet
             let leftTotalBet = this._WinCollection_CR.TotalBet;
             while (leftTotalBet > this._Condition_CR.ScoreInterval) leftTotalBet -= this._Condition_CR.ScoreInterval;
